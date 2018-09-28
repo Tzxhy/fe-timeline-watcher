@@ -1,0 +1,15 @@
+{
+  "name": "fe-timeline-watcher",
+  "version": "0.0.1",
+  "description": "a tool can retrieve user-side page load timeand resource time and send them to your backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "timeline",
+    "watcher"
+  ],
+  "author": "Tzxhy",
+  "license": "MIT"
+}
