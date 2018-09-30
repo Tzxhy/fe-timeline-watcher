@@ -1,4 +1,6 @@
 dist/*
 dev/*
-index.ts
+index.js
+Watcher.ts
 script/*
+test/*

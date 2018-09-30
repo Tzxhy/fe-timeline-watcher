@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自动化测试用例</title>
+</head>
+<body>
+    <h1>自动化测试用例</h1>
+    <h1>将在2s后发起请求</h1>
+    <script src="./lib.js"></script>
+    <script src="./fe-timeline-watcher.min.js"></script>
+    <script>
+        __FE_TIMELINE_WATCHER__.start();
+        setTimeout(()=>{
+            appendImg('./one.jpg');
+        }, 2000);
+    </script>
+</body>
+</html>

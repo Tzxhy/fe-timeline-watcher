@@ -4,7 +4,7 @@
   "description": "a tool can retrieve user-side page load timeand resource time and send them to your backend",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "nightwatch --env chrome",
     "start": "rollup -c --watch",
     "build": "rm -rf dist/ && node script/build.js",
     "watch": "node script/watch.js"
