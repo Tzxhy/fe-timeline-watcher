@@ -196,7 +196,7 @@ class Watcher {
     }
 
 
-    sendBuf(cData) {
+    sendBuf(cData?) {
         const data: SendData = cData ? {cData} : {};
         switch (this._sendType) {
         case CONSTANTS.FIRST_PAGE:

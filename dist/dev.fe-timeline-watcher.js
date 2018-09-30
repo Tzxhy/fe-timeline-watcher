@@ -13,6 +13,7 @@ var CONSTANTS;
     CONSTANTS[CONSTANTS["FIRST_PAGE"] = 0] = "FIRST_PAGE";
     CONSTANTS[CONSTANTS["LOAD_RESOURCE"] = 1] = "LOAD_RESOURCE";
     CONSTANTS[CONSTANTS["ERROR"] = 2] = "ERROR";
+    CONSTANTS[CONSTANTS["CUSTOM_DATA"] = 3] = "CUSTOM_DATA";
 })(CONSTANTS || (CONSTANTS = {}));
 var Watcher = /** @class */ (function () {
     function Watcher(watcherUrl, needResourceInfo, needPageLoadInfo, needErrorInfo) {
@@ -98,6 +99,9 @@ var Watcher = /** @class */ (function () {
         duration = Watcher.getShortS("" + duration);
         console.log('duration: ', duration);
         var dnsTime = Watcher.getShortS("" + (domainLookupEnd - domainLookupStart));
+        // 使用该函数计算resource资源时间responseTime，有一个前提。就是资源是同源资源或者
+        // 资源响应头设置了Timing-Allow-Origin: 源或*
+        // https://www.w3.org/TR/resource-timing-2/#issue-container-generatedID-1下面一点。
         var responseTime = Watcher.getShortS("" + (responseEnd - responseStart));
         return {
             dnsTime: dnsTime,
@@ -126,8 +130,8 @@ var Watcher = /** @class */ (function () {
     Watcher.getShortS = function (str) {
         return str.slice(0, 8);
     };
-    Watcher.prototype.sendBuf = function () {
-        var data = {};
+    Watcher.prototype.sendBuf = function (cData) {
+        var data = cData ? { cData: cData } : {};
         switch (this._sendType) {
             case CONSTANTS.FIRST_PAGE:
                 data.browserInfo = this.browserInfo;
@@ -155,6 +159,10 @@ var Watcher = /** @class */ (function () {
             credentials: 'omit',
             body: JSON.stringify(data)
         });
+    };
+    Watcher.prototype.sendCustom = function (data) {
+        this._sendType = CONSTANTS.CUSTOM_DATA;
+        this.sendBuf(data);
     };
     Watcher.start = function () {
         var rest = [];

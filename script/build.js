@@ -2,7 +2,7 @@
 * @Author: 谭智轩
 * @Date:   2018-09-28 20:03:18
 * @Last Modified by:   谭智轩
-* @Last Modified time: 2018-09-29 11:08:21
+* @Last Modified time: 2018-09-30 14:19:32
 * @email: zhixuan.tan@qunar.com
 */
 const babel = require('rollup-plugin-babel');
@@ -14,7 +14,7 @@ const typescript = require('rollup-plugin-typescript2');
 const rollup = require('rollup');
 // see below for details on the options
 const inputOptions = {
-    input: 'index.ts',
+    input: 'Watcher.ts',
     plugins: [
         resolve(),
         commonjs(),
