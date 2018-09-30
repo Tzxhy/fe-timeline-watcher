@@ -1,4 +1,4 @@
 
 
 --reporter list
---recursive "./unit-tests/*.test.js"
+--recursive

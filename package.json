@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test-e2e": "nightwatch --env chrome",
-    "test-unit": "nyc  mocha \"./unit-tests/*.test.js\"",
+    "test-unit": "nyc mocha \"./unit-tests/*.test.js\"",
     "start": "rollup -c --watch",
     "build": "rm -rf dist/ && node script/build.js",
     "watch": "node script/watch.js"
@@ -39,7 +39,8 @@
   },
   "dependencies": {},
   "nyc": {
-    "exclude": ["unit-tests"],
-    "include": ["dist/*.js"]
+    
+    "exclude-after-remap": false,
+    "include": ["dist"]
   }
 }

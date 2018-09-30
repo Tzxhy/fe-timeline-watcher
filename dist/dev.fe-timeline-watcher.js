@@ -198,4 +198,3 @@ var Watcher = /** @class */ (function () {
 }());
 
 module.exports = Watcher;
-//# sourceMappingURL=dev.fe-timeline-watcher.js.map
