@@ -17,12 +17,14 @@ var CONSTANTS;
 })(CONSTANTS || (CONSTANTS = {}));
 var Watcher = /** @class */ (function () {
     function Watcher(watcherUrl, needResourceInfo, needPageLoadInfo, needErrorInfo) {
-        if (watcherUrl === void 0) { watcherUrl = '//touch.tzx.qunar.com/watcher'; }
+        var _a;
         if (needResourceInfo === void 0) { needResourceInfo = true; }
         if (needPageLoadInfo === void 0) { needPageLoadInfo = true; }
         if (needErrorInfo === void 0) { needErrorInfo = true; }
         var _this = this;
-        Watcher.watcherUrl = watcherUrl;
+        if (!watcherUrl) {
+            throw new Error("\u6784\u9020\u51FD\u6570\u9700\u8981\u63A5\u6536watcherUrl\u53C2\u6570\uFF01");
+        }
         if (window.performance && window.performance.getEntries) {
             if (window.PerformanceObserver) {
                 this.getLatestEntries = this.getLatestEntries.bind(this);
@@ -34,28 +36,31 @@ var Watcher = /** @class */ (function () {
             console.info('Your browser doesn\'t support Performance API. We cann\'t record any data. See you.');
             return null;
         }
+        Watcher.watcherUrl = watcherUrl;
         this._sendType = CONSTANTS.FIRST_PAGE;
         this._hasReadIndex = 0;
         this._messageBuf = [];
         this.doOnce();
         // 初始化Performance监察者对象
         // const self: any = this;
-        console.log('document.readyState: ', document.readyState);
+        // console.log('document.readyState: ', document.readyState);
         if (document.readyState !== 'complete') {
             var oldOnload_1 = window.onload || noop;
             window.onload = function (e) {
                 setTimeout(function () {
                     var _a;
                     _a = Watcher.getFirstEntries(), _this._entriesPageLoad = _a[0], _this._entriesResource = _a[1];
-                    console.log('this._entriesPageLoad: ', _this._entriesPageLoad);
+                    // console.log('this._entriesPageLoad: ', this._entriesPageLoad);
                     _this._hasReadIndex = 0;
-                    _this.sendBuf();
+                    _this.sendData();
                 }, 0);
                 return oldOnload_1.bind(e).call(e);
             };
         }
         else {
-            this.sendBuf();
+            _a = Watcher.getFirstEntries(), this._entriesPageLoad = _a[0], this._entriesResource = _a[1];
+            this._hasReadIndex = 0;
+            this.sendData();
         }
     }
     Watcher.getFirstEntries = function () {
@@ -88,16 +93,16 @@ var Watcher = /** @class */ (function () {
                 ].join('\n');
                 _this._errorMsg = message;
                 _this._sendType = CONSTANTS.ERROR;
-                _this.sendBuf();
+                _this.sendData();
             }
             return oldErrorHandle(msg, url, lineNo, columnNo, error);
         };
     };
     Watcher.compute = function (performanceResourceTiming) {
-        console.log('performanceResourceTiming: ', performanceResourceTiming);
+        // console.log('performanceResourceTiming: ', performanceResourceTiming);
         var domainLookupStart = performanceResourceTiming.domainLookupStart, domainLookupEnd = performanceResourceTiming.domainLookupEnd, duration = performanceResourceTiming.duration, url = performanceResourceTiming.name, responseStart = performanceResourceTiming.responseStart, responseEnd = performanceResourceTiming.responseEnd;
         duration = Watcher.getShortS("" + duration);
-        console.log('duration: ', duration);
+        // console.log('duration: ', duration);
         var dnsTime = Watcher.getShortS("" + (domainLookupEnd - domainLookupStart));
         // 使用该函数计算resource资源时间responseTime，有一个前提。就是资源是同源资源或者
         // 资源响应头设置了Timing-Allow-Origin: 源或*
@@ -123,14 +128,20 @@ var Watcher = /** @class */ (function () {
                 // 清空
                 Watcher._tempResource = [];
                 _this._sendType = CONSTANTS.LOAD_RESOURCE;
-                _this.sendBuf();
+                _this.sendData();
             }, 1000);
         }
     };
     Watcher.getShortS = function (str) {
         return str.slice(0, 8);
     };
-    Watcher.prototype.sendBuf = function (cData) {
+    Watcher.useOwnSender = function (sender) {
+        if (!sender) {
+            throw new Error("useOwnSender\u9700\u8981\u63A5\u6536\u4E00\u4E2Asender\u51FD\u6570\u4F5C\u4E3A\u53C2\u6570");
+        }
+        Watcher._sender = sender;
+    };
+    Watcher.prototype.sendData = function (cData) {
         var data = cData ? { cData: cData } : {};
         switch (this._sendType) {
             case CONSTANTS.FIRST_PAGE:
@@ -151,25 +162,36 @@ var Watcher = /** @class */ (function () {
             default:
                 break;
         }
-        fetch(Watcher.watcherUrl, {
-            method: 'POST',
+        if (Watcher._sender) {
+            Watcher._sender(data);
+        }
+        else {
+            this.originSendData(data);
+        }
+    };
+    Watcher.prototype.originSendData = function (data) {
+        var fetchData = fetch(Watcher.watcherUrl + "?data=" + JSON.stringify(data) /*, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8',
             },
             credentials: 'omit',
             body: JSON.stringify(data)
-        });
+        }*/);
+        // if (__DEV__) {
+        //     return data;
+        // }
+        return fetchData;
     };
     Watcher.prototype.sendCustom = function (data) {
         this._sendType = CONSTANTS.CUSTOM_DATA;
-        this.sendBuf(data);
+        this.sendData(data);
     };
-    Watcher.start = function () {
-        var rest = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            rest[_i] = arguments[_i];
-        }
-        return new (Watcher.bind.apply(Watcher, [void 0].concat(rest)))();
+    Watcher.start = function (watcherUrl, needResourceInfo, needPageLoadInfo, needErrorInfo) {
+        if (needResourceInfo === void 0) { needResourceInfo = true; }
+        if (needPageLoadInfo === void 0) { needPageLoadInfo = true; }
+        if (needErrorInfo === void 0) { needErrorInfo = true; }
+        return new Watcher(watcherUrl, needResourceInfo, needPageLoadInfo, needErrorInfo);
     };
     Watcher._tempResource = [];
     return Watcher;

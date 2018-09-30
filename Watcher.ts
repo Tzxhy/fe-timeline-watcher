@@ -6,7 +6,6 @@
 * @email: zhixuan.tan@qunar.com
 */
 
-
 const noop = () => {};
 
 enum CONSTANTS {
@@ -53,23 +52,28 @@ class Watcher {
 
     static watcherUrl;
     constructor(
-        watcherUrl: string = '//touch.tzx.qunar.com/watcher',
+        watcherUrl: string,
         needResourceInfo: boolean | object = true,
         needPageLoadInfo: boolean = true,
         needErrorInfo: boolean = true,
     ) {
-        Watcher.watcherUrl = watcherUrl;
+        if (!watcherUrl) {
+            throw new Error(`构造函数需要接收watcherUrl参数！`);
+        }
+
+
         if (window.performance && window.performance.getEntries) {
 
             if ((window as any).PerformanceObserver) {
                 this.getLatestEntries = this.getLatestEntries.bind(this);
-                var observer = new PerformanceObserver(this.getLatestEntries);
+                const observer = new PerformanceObserver(this.getLatestEntries);
                 observer.observe({entryTypes: ['resource']});
             }
         } else {
             console.info('Your browser doesn\'t support Performance API. We cann\'t record any data. See you.');
             return null;
         }
+        Watcher.watcherUrl = watcherUrl;
         this._sendType = CONSTANTS.FIRST_PAGE;
 
         this._hasReadIndex = 0;
@@ -79,21 +83,24 @@ class Watcher {
 
         // 初始化Performance监察者对象
         // const self: any = this;
-        console.log('document.readyState: ', document.readyState);
+        // console.log('document.readyState: ', document.readyState);
         if (document.readyState !== 'complete') {
             const oldOnload = window.onload || noop;
             window.onload = (e) => {
                 setTimeout(()=> {
                     [this._entriesPageLoad,
                     this._entriesResource] = Watcher.getFirstEntries();
-                    console.log('this._entriesPageLoad: ', this._entriesPageLoad);
+                    // console.log('this._entriesPageLoad: ', this._entriesPageLoad);
                     this._hasReadIndex = 0;
-                    this.sendBuf();
+                    this.sendData();
                 }, 0);
                 return oldOnload.bind(e).call(e);
             }
         } else {
-            this.sendBuf();
+            [this._entriesPageLoad,
+                this._entriesResource] = Watcher.getFirstEntries();
+            this._hasReadIndex = 0;
+            this.sendData();
         }
     }
 
@@ -132,7 +139,7 @@ class Watcher {
 
                 this._errorMsg = message;
                 this._sendType = CONSTANTS.ERROR;
-                this.sendBuf();
+                this.sendData();
             }
 
             return oldErrorHandle(msg, url, lineNo, columnNo, error);
@@ -141,7 +148,7 @@ class Watcher {
     }
 
     static compute(performanceResourceTiming) : PageData {
-        console.log('performanceResourceTiming: ', performanceResourceTiming);
+        // console.log('performanceResourceTiming: ', performanceResourceTiming);
         let {
             domainLookupStart,
             domainLookupEnd,
@@ -152,7 +159,7 @@ class Watcher {
         } = performanceResourceTiming;
 
         duration = Watcher.getShortS(`${duration}`);
-        console.log('duration: ', duration);
+        // console.log('duration: ', duration);
         const dnsTime = Watcher.getShortS(`${domainLookupEnd - domainLookupStart}`);
 
         // 使用该函数计算resource资源时间responseTime，有一个前提。就是资源是同源资源或者
@@ -185,7 +192,7 @@ class Watcher {
                 // 清空
                 Watcher._tempResource = [];
                 this._sendType = CONSTANTS.LOAD_RESOURCE;
-                this.sendBuf();
+                this.sendData();
             }, 1000);
         }
 
@@ -195,8 +202,16 @@ class Watcher {
         return str.slice(0, 8);
     }
 
+    static _sender?: Function;
+    static useOwnSender(sender: Function) {
+        if (!sender) {
+            throw new Error(`useOwnSender需要接收一个sender函数作为参数`);
+        }
+        Watcher._sender = sender;
 
-    sendBuf(cData?) {
+    }
+
+    sendData(cData?) {
         const data: SendData = cData ? {cData} : {};
         switch (this._sendType) {
         case CONSTANTS.FIRST_PAGE:
@@ -218,24 +233,48 @@ class Watcher {
 
             break;
         }
-        fetch(Watcher.watcherUrl, {
-            method: 'POST',
+        if (Watcher._sender) {
+            Watcher._sender(data);
+        } else {
+            this.originSendData(data);
+        }
+
+    }
+
+    originSendData(data) {
+        
+        const fetchData = fetch(`${Watcher.watcherUrl}?data=${JSON.stringify(data)}`/*, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json;charset=utf-8',
             },
             credentials: 'omit',
             body: JSON.stringify(data)
-        });
-
+        }*/);
+        // if (__DEV__) {
+        //     return data;
+        // }
+        return fetchData;
     }
+    
 
     sendCustom(data) {
         this._sendType = CONSTANTS.CUSTOM_DATA;
-        this.sendBuf(data);
+        this.sendData(data);
 
     }
-    static start(...rest){
-        return new Watcher(...rest);
+    static start(
+        watcherUrl: string,
+        needResourceInfo: boolean | object = true,
+        needPageLoadInfo: boolean = true,
+        needErrorInfo: boolean = true
+        ){
+        return new Watcher(
+            watcherUrl,
+            needResourceInfo,
+            needPageLoadInfo,
+            needErrorInfo
+        );
     }
 }
 

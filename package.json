@@ -4,7 +4,8 @@
   "description": "a tool can retrieve user-side page load timeand resource time and send them to your backend",
   "main": "index.js",
   "scripts": {
-    "test": "nightwatch --env chrome",
+    "test-e2e": "nightwatch --env chrome",
+    "test-unit": "nyc  mocha \"./unit-tests/*.test.js\"",
     "start": "rollup -c --watch",
     "build": "rm -rf dist/ && node script/build.js",
     "watch": "node script/watch.js"
@@ -13,7 +14,7 @@
     "timeline",
     "watcher"
   ],
-  "author": "Tzxhy",
+  "author": "tzxhy",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.1.0",
@@ -22,8 +23,11 @@
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.1",
     "babel-preset-es2015-rollup": "^3.0.0",
+    "chai": "^4.2.0",
     "eslint": "^5.6.0",
+    "mocha": "^5.2.0",
     "nightwatch": "^0.9.21",
+    "nyc": "^13.0.1",
     "rollup": "^0.66.2",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-babel-minify": "^6.0.0",
@@ -33,5 +37,9 @@
     "typescript": "^3.1.1",
     "typescript-eslint-parser": "^19.0.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "nyc": {
+    "exclude": ["unit-tests"],
+    "include": ["dist/*.js"]
+  }
 }

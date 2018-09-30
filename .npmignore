@@ -8,3 +8,6 @@ nightwatch.json
 rollup*
 tsconfig.json
 bin
+selenium-debug.log
+.rpt2_cache
+Watcher.ts
