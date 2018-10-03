@@ -1,10 +1,11 @@
 {
   "name": "fe-timeline-watcher",
-  "version": "0.0.1",
+  "version": "0.0.1-beta.1",
   "description": "a tool can retrieve user-side page load timeand resource time and send them to your backend",
   "main": "index.js",
   "scripts": {
     "test-e2e": "nightwatch --env chrome",
+    "test": "nyc mocha \"./unit-tests/*.test.js\"",
     "test-unit": "nyc mocha \"./unit-tests/*.test.js\"",
     "start": "rollup -c --watch",
     "build": "rm -rf dist/ && node script/build.js",
@@ -39,8 +40,6 @@
   },
   "dependencies": {},
   "nyc": {
-    
-    "exclude-after-remap": false,
     "include": ["dist"]
   }
 }

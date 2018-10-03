@@ -234,26 +234,37 @@ class Watcher {
             break;
         }
         if (Watcher._sender) {
-            Watcher._sender(data);
+            return Watcher._sender(data);
         } else {
-            this.originSendData(data);
+            return this.originSendData(data);
         }
 
     }
 
     originSendData(data) {
         
-        const fetchData = fetch(`${Watcher.watcherUrl}?data=${JSON.stringify(data)}`/*, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-            },
-            credentials: 'omit',
-            body: JSON.stringify(data)
-        }*/);
-        // if (__DEV__) {
-        //     return data;
-        // }
+        let fetchData;
+        const dataToJson = encodeURIComponent(JSON.stringify(data));
+        if (dataToJson.length > 2000) { // 使用post方式
+            fetchData = fetch(Watcher.watcherUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+                },
+                body: `data=${dataToJson}`
+            });
+        } else {
+            fetchData = fetch(`${Watcher.watcherUrl}?data=${dataToJson}`);
+        }
+        //  = fetch(`${Watcher.watcherUrl}?data=${}`, {
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json;charset=utf-8',
+        //     },
+        //     credentials: 'omit',
+        //     body: JSON.stringify(data)
+        // });
+
         return fetchData;
     }
     

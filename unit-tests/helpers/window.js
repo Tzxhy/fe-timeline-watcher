@@ -2,7 +2,7 @@
 * @Author: 谭智轩
 * @Date:   2018-09-30 16:12:03
 * @Last Modified by:   谭智轩
-* @Last Modified time: 2018-09-30 17:45:35
+* @Last Modified time: 2018-09-30 22:42:03
 * @email: zhixuan.tan@qunar.com
 */
 var performance = require('./performance.js');
@@ -17,9 +17,10 @@ window.performance = performance;
 window.PerformanceObserver = PerformanceObserver;
 window.navigator = navigator;
 window.document = document;
-setTimeout(function(){
-    if (typeof window.onload === 'function') {
-        window.onload({});
-    }
-}, windowOnLoad);
+window.onload = () => {};
+// setTimeout(function(){
+//     if (typeof window.onload === 'function') {
+//         window.onload({});
+//     }
+// }, windowOnLoad);
 global.window = window;

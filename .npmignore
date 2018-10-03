@@ -11,3 +11,5 @@ bin
 selenium-debug.log
 .rpt2_cache
 Watcher.ts
+.nyc_output
+coverage

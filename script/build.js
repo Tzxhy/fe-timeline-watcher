@@ -2,7 +2,7 @@
 * @Author: 谭智轩
 * @Date:   2018-09-28 20:03:18
 * @Last Modified by:   谭智轩
-* @Last Modified time: 2018-09-30 18:09:42
+* @Last Modified time: 2018-09-30 21:06:06
 * @email: zhixuan.tan@qunar.com
 */
 const babel = require('rollup-plugin-babel');
